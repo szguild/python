@@ -1,4 +1,5 @@
 """
+BeautifulSoup 활용한 Web Crawling
 Desc:네이버 영화랭킹 평점순(모든영화) 1위 ~ 1000위
 """
 from datetime import datetime
