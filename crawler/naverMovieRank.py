@@ -1,9 +1,6 @@
-'''
-pip install bs4
-pip install requests
-
-네이버 영화랭킹 평점순(모든영화) 1위 ~ 1000위
-'''
+"""
+Desc:네이버 영화랭킹 평점순(모든영화) 1위 ~ 1000위
+"""
 from datetime import datetime
 import requests
 from bs4 import BeautifulSoup
@@ -31,7 +28,12 @@ for pageUrl in url:
     for key in keys:
         if key.select_one('.tit5'):
             i += 1
-            val.append((today, i, key.select_one('.tit5').get_text().replace('\n', ''), float(key.select_one('.point').get_text())))
+            val.append(
+                (today,
+                 i,
+                 key.select_one('.tit5').get_text().replace('\n', ''),
+                 float(key.select_one('.point').get_text()))
+            )
             # print(val[i-1])
         if i >= ranking:
             break
@@ -39,24 +41,26 @@ for pageUrl in url:
 # connection info
 with open('../config/connector.json', 'r') as f:
     config = json.load(f)
-host = config['mysql']['host']
-user = config['mysql']['user']
-password = config['mysql']['password']
-database = config['mysql']['database']
 
 conn = mysql.connector.connect(
-    host=host,
-    user=user,
-    password=password,
-    database=database
+    host=config['mysql']['host'],
+    user=config['mysql']['user'],
+    password=config['mysql']['password'],
+    database=config['mysql']['database']
 )
 
-cursor = conn.cursor()
+try:
+    with conn.cursor() as cursor:
+        sql = 'DELETE FROM NAVER_MOVIE_RANK_BY_RATING WHERE YYYYMMDD = %s'
+        cursor.execute(sql, (today,))
+    conn.commit()
 
-sql = 'INSERT INTO NAVER_MOVIE_RANK_BY_RATING (YYYYMMDD, RANKING, MOVIE_NM, RATING) VALUES (%s, %s, %s, %s)'
+    with conn.cursor() as cursor:
+        sql = '''INSERT INTO NAVER_MOVIE_RANK_BY_RATING (YYYYMMDD, RANKING, MOVIE_NM, RATING, LOAD_DTTM) 
+                                                 VALUES (%s, %s, %s, %s, NOW())'''
+        cursor.executemany(sql, val)
+    conn.commit()
+    print(cursor.rowcount, 'record was inserted')
 
-cursor.executemany(sql, val)
-conn.commit()
-conn.close()
-
-print(cursor.rowcount, ' record was inserted')
+finally:
+    conn.close()
