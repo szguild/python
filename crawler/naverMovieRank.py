@@ -13,12 +13,15 @@ defaultUrl = 'https://movie.naver.com/movie/sdb/rank/rmovie.nhn?sel=pnt&date=' +
 url = []
 val = []
 
+# 1page 당 50개의 ranking 조회. 총 페이지수 = ranking/50
 for i in range(1, int(ranking/50) + 1, 1):
     if i == 1:
         url.append(defaultUrl)
     else:
+        # 2page 부터 추가 url : &page=2
         url.append(defaultUrl + '&page=' + str(i))
 
+# tbody tag 하위 tr 태그에 1개의 ranking 데이터 존재
 i = 0
 for pageUrl in url:
     src = requests.get(pageUrl).text
@@ -38,7 +41,7 @@ for pageUrl in url:
         if i >= ranking:
             break
 
-# connection info
+# connection info : 설정 json 파일의 connection 정보 활용
 with open('../config/connector.json', 'r') as f:
     config = json.load(f)
 
