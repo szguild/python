@@ -55,7 +55,7 @@ def getQuantStock(df: pd.DataFrame()) -> pd.DataFrame():
         "전일대비거래율": "0+",
         "변환등락율": "0.5+"
     }
-
+    
     for col in df:
         if quant_condition.get(col) is not None:
             upDown = quant_condition.get(col)[-1]
