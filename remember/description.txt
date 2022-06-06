@@ -1,0 +1,44 @@
+#프로그램 실행
+1. pandas 설치
+    $ pip install pandas
+2. 프로그램 실행
+    압축해제 경로로 이동 (~~~/remember)
+    $ python analysis.py
+
+
+#데이터 처리 흐름 설명
+1. data merge
+    1) 기본 데이터 Load
+        .성공건 Load
+        .실패건 Load
+    2) user master 생성
+        .user device 정보 load
+        .성공건과 user device 정보를 조합 및 중복제거하여, user master 생성
+    3) 실패건에 대한 user id 식별
+        .device_id 기준으로 user master상의 user_id 식별
+        .비식별 user에 대한 unique 식별 및 후속 계산을 위해 user_id가 비식별되는 경우, device_id로 대체
+    4) data 통합
+        .성공건 + 실패건 통합 : 성공/실패 구분자(success_yn) 포함
+        .가입일 Load 및 KST 변환
+        .Gargage 데이터 삭제 : event_dt (YYYY-MM-DD) == joined_at (YYYY-MM-DD)
+        .OS 및 버전에 따른 update 전후 구분자 추가
+
+2. data export
+    1) 로그인 시도한 유저 수 중 로그인 성공한 유저 수 : 1_login_user_cnt.csv
+        .grouping 기준 : 일자, 업데이트 전후, OS
+        .user_id(비식별인 경우, device_id) 기준으로 distinct count
+    2) 로그인 시도 횟수 대비 로그인 성공 수 : 2_login_cnt.csv
+        .grouping 기준 : 일자, 업데이트 전후, OS
+        .grouping 기준에 따른 count
+    3) 로그인 방법별(네이버, 구글, 페이스북, 이메일) 로그인 시도 횟수 대비 로그인 성공 건 수 : 3_login_source_cnt.csv
+        .grouping 기준 : 일자, 업데이트 전후, OS, 로그인 방법
+        .grouping 기준에 따른 count
+
+
+#Question
+1. 데이터 추출간 api_log.csv 파일의 용도
+    유실된 login 성공 이벤트에 대한 보정 목적인가?
+    가령, 로그인 이벤트가 없지만, api 호출 이력이 있는 경우..
+    md5 Hash 인코딩은 input이 같으면 동일한 output이 나오는 암호화 기법인가? OK인듯..
+    저장된 login 성공 이벤트와 일치하는 api log를 보고 인코딩된 method명 추정하여 전체 login log 추출
+    추출된 결과로 유실된 login 성공 이벤트 보정
